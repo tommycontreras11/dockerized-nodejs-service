@@ -12,8 +12,8 @@ app.get("/", (_req, res) => {
 app.post("/secret", (req, res) => {
   const { user, password } = req.body;
 
-  if (user != config.USERNAME || password != config.PASSWORD)
-    res.status(400).json({ message: "User y/o password incorrect" });
+  if (user !== config.USERNAME || password !== config.PASSWORD)
+    res.status(401).json({ message: "User y/o password incorrect" });
 
   res.status(200).json({ message: config.SECRET_MESSAGE });
 });

@@ -5,11 +5,11 @@ dotenv.config({
 })
 
 const requiredEnv = (env) => {
-    const name = process.env[env]
+    const value = process.env[env]
 
-    if(!name) throw new Error(`This env ${env} is required`)
+    if(!value) throw new Error(`This env ${env} is required`)
 
-    return name
+    return value
 }
 
 export default {

@@ -7,14 +7,41 @@
     state: present
     update_cache: true
 
-- name: Install Docker
+- name: Create Docker keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ ansible_facts.architecture | replace('x86_64', 'amd64') | replace('aarch64', 'arm64') }}
+      signed-by=/etc/apt/keyrings/docker.asc]
+      https://download.docker.com/linux/ubuntu
+      {{ ansible_facts.distribution_release }} stable
+    filename: docker
+    state: present
+    update_cache: true
+
+- name: Install Docker Engine
   ansible.builtin.apt:
     name:
-      - docker.io
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
     state: present
 
 - name: Ensure Docker service is running
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: docker
     state: started
     enabled: true
@@ -24,3 +51,13 @@
     name: ubuntu
     groups: docker
     append: true
+
+- name: Verify Docker installation
+  ansible.builtin.command:
+    cmd: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Display Docker version
+  ansible.builtin.debug:
+    msg: "Docker version: {{ docker_version.stdout }}"

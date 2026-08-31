@@ -1,0 +1,37 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install basic utilities
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - unzip
+      - tar
+      - git
+      - iptables-persistent
+    state: present
+
+- name: Install fail2ban
+  ansible.builtin.apt:
+    name: fail2ban
+    state: present
+    update_cache: true
+
+- name: Ensure fail2ban is running
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+
+- name: Allow application traffic
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: 3000
+    ctstate: NEW
+    jump: ACCEPT
+    rule_num: 5

@@ -10,18 +10,29 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/secret", (req, res) => {
-  const auth = req.headers.authorization
+  const auth = req.headers.authorization;
 
-  if(!auth?.startsWith("Basic "))
+  console.log("Authorization:", auth);
+
+  if (!auth?.startsWith("Basic ")) {
     return res
       .status(401)
       .set("WWW-Authenticate", 'Basic realm="Restricted"')
-      .send("Authentication required")
+      .send("Authentication required");
+  }
 
-  const encodedCredentials = auth.split(" ")[1]
-  const credentials = Buffer.from(encodedCredentials, "base64").toString("utf8")
+  const encodedCredentials = auth.split(" ")[1];
 
-  const [user, password] = credentials.split(":")
+  const credentials = Buffer
+    .from(encodedCredentials, "base64")
+    .toString("utf8");
+
+  const [user, password] = credentials.split(":");
+
+  console.log("User received:", JSON.stringify(user));
+  console.log("Password received:", JSON.stringify(password));
+  console.log("Expected user:", JSON.stringify(config.USERNAME));
+  console.log("Expected password:", JSON.stringify(config.PASSWORD));
 
   if (
     user !== config.USERNAME ||

@@ -53,17 +53,17 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > "$RUNNER_TEMP/oracle-cloud.key"
           chmod 600 "$RUNNER_TEMP/oracle-cloud.key"
-      
+
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.ORACLE_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
-      
+
       - name: Create Ansible Vault password file
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > "$RUNNER_TEMP/vault-password"
-      
+
       - name: Run Ansible deployment
         run: |
           ansible-playbook \

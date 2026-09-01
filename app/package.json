@@ -1,13 +1,13 @@
 {
   "name": "dockerized-nodejs-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple Node.js service for CI/CD deployment",
   "main": "index.js",
   "scripts": {
     "dev": "node src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Tommy Contreras",
   "license": "ISC",
   "type": "module",
   "dependencies": {

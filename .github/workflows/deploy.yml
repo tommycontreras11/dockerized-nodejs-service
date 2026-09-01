@@ -60,9 +60,18 @@ jobs:
           echo "${{ secrets.ORACLE_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
+      - name: Test SSH connection
+        run: |
+          ssh \
+            -i "$RUNNER_TEMP/oracle-cloud.key" \
+            -o StrictHostKeyChecking=yes \
+            ubuntu@157.151.214.12 \
+            "echo SSH connection successful"
+
       - name: Create Ansible Vault password file
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > "$RUNNER_TEMP/vault-password"
+          chmod 600 "$RUNNER_TEMP/vault-password"
 
       - name: Run Ansible deployment
         run: |

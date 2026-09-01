@@ -74,8 +74,8 @@
 
 - name: Pull application image
   community.docker.docker_image:
-    name: ghcr.io/tommycontreras11/dockerized-nodejs-service
-    tag: latest
+    name: "{{ docker_image }}"
+    tag: "{{ docker_tag }}"
     source: pull
 
 - name: Remove existing application container
@@ -86,7 +86,7 @@
 - name: Start application container
   community.docker.docker_container:
     name: dockerized-nodejs-service
-    image: ghcr.io/tommycontreras11/dockerized-nodejs-service:latest
+    image: "{{ docker_image }}:{{ docker_tag }}"
     state: started
     restart_policy: unless-stopped
     env_file: /opt/dockerized-nodejs-service/.env

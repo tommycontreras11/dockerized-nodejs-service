@@ -22,7 +22,7 @@
 - name: Add Docker repository
   ansible.builtin.apt_repository:
     repo: >-
-      deb [arch={{ ansible_facts.architecture | replace('x86_64', 'amd64') | replace('aarch64', 'arm64') }}
+      deb [arch={{ 'arm64' if ansible_facts.architecture == 'aarch64' else 'amd64' }}
       signed-by=/etc/apt/keyrings/docker.asc]
       https://download.docker.com/linux/ubuntu
       {{ ansible_facts.distribution_release }} stable
@@ -40,8 +40,8 @@
       - docker-compose-plugin
     state: present
 
-- name: Ensure Docker service is running
-  ansible.builtin.systemd:
+- name: Ensure Docker is running
+  ansible.builtin.service:
     name: docker
     state: started
     enabled: true
@@ -52,12 +52,43 @@
     groups: docker
     append: true
 
-- name: Verify Docker installation
-  ansible.builtin.command:
-    cmd: docker --version
-  register: docker_version
-  changed_when: false
+- name: Create application directory
+  ansible.builtin.file:
+    path: /opt/dockerized-nodejs-service
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: "0755"
 
-- name: Display Docker version
-  ansible.builtin.debug:
-    msg: "Docker version: {{ docker_version.stdout }}"
+- name: Create application environment file
+  ansible.builtin.copy:
+    dest: /opt/dockerized-nodejs-service/.env
+    owner: ubuntu
+    group: ubuntu
+    mode: "0600"
+    content: |
+      PORT=3000
+      SECRET_MESSAGE={{ secret_message }}
+      USERNAME={{ username }}
+      PASSWORD={{ password }}
+
+- name: Pull application image
+  community.docker.docker_image:
+    name: ghcr.io/tommycontreras11/dockerized-nodejs-service
+    tag: latest
+    source: pull
+
+- name: Remove existing application container
+  community.docker.docker_container:
+    name: dockerized-nodejs-service
+    state: absent
+
+- name: Start application container
+  community.docker.docker_container:
+    name: dockerized-nodejs-service
+    image: ghcr.io/tommycontreras11/dockerized-nodejs-service:latest
+    state: started
+    restart_policy: unless-stopped
+    env_file: /opt/dockerized-nodejs-service/.env
+    ports:
+      - "3000:3000"

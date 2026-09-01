@@ -6,7 +6,8 @@ const app = express();
 app.use(express.json())
 
 app.get("/", (_req, res) => {
-  res.status(200).send("Hello, World!");
+  res.status(200).send("Hello from CI/CD!");
+  //res.status(200).send("Hello, World!");
 });
 
 app.get("/secret", (req, res) => {

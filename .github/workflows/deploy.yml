@@ -10,7 +10,7 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +19,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -36,4 +36,33 @@ jobs:
           context: ./app
           push: true
           platforms: linux/arm64
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+
+      - name: Install Ansible
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ansible
+
+      - name: Install Ansible collections
+        run: |
+          ansible-galaxy collection install community.docker
+
+      - name: Create SSH private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > "$RUNNER_TEMP/oracle-cloud.key"
+          chmod 600 "$RUNNER_TEMP/oracle-cloud.key"
+
+      - name: Create Ansible Vault password file
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > "$RUNNER_TEMP/vault-password"
+
+      - name: Run Ansible deployment
+        run: |
+          ansible-playbook \
+            -i ansible/inventory/hosts.ini \
+            --private-key "$RUNNER_TEMP/oracle-cloud.key" \
+            --vault-password-file "$RUNNER_TEMP/vault-password" \
+            --extra-vars "docker_image=ghcr.io/${{ github.repository }} docker_tag=${{ github.sha }}" \
+            ansible/playbook.yml
